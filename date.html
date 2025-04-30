@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Picker - Almost there, Pookie!</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #ffcde1 0%, #e0c3ff 100%);
+      min-height: 100vh;
+    }
+    
+    .handwritten {
+      font-family: 'Caveat', cursive;
+    }
+    
+    .calendar-day {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      opacity: 0.5; /* Faded by default */
+    }
+    
+    .calendar-day:hover:not(.selected-date) {
+      transform: scale(1.1);
+      opacity: 0.8;
+      background-color: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 15px rgba(255, 192, 203, 0.7);
+    }
+    
+    .selected-date {
+      background-color: rgba(255, 192, 203, 0.5);
+      animation: pulse 1.5s infinite;
+      opacity: 1 !important;
+    }
+    
+    .time-option {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .time-option:hover {
+      transform: translateY(-5px) rotate(2deg);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .time-option.selected {
+      border: 2px solid #ff85a2;
+      background-color: rgba(255, 133, 162, 0.2);
+    }
+    
+    .cursor {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: screen;
+    }
+    
+    .firefly {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background-color: #fffc;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 2px #fff9;
+      animation: float 15s infinite linear;
+      opacity: 0.7;
+    }
+    
+    .cloud {
+      position: absolute;
+      opacity: 0.4;
+      animation: float-cloud 60s infinite linear;
+    }
+    
+    /* 3D Mirror Container */
+    .mirror-container {
+      perspective: 1000px;
+      margin: 0 auto;
+      transform-style: preserve-3d;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    
+    .mirror-content {
+      transform: rotateX(10deg);
+      transform-style: preserve-3d;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 20px;
+    }
+    
+    .mirror-reflection {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+      border-radius: 50%;
+      transform: rotateX(90deg);
+      transform-origin: center top;
+      filter: blur(5px);
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(10px, -10px); }
+      50% { transform: translate(0, -20px); }
+      75% { transform: translate(-10px, -10px); }
+      100% { transform: translate(0, 0); }
+    }
+    
+    @keyframes float-cloud {
+      from { transform: translateX(-5%); }
+      to { transform: translateX(105%); }
+    }
+    
+    .heart-float {
+      animation: float-heart 3s infinite ease-in-out;
+    }
+    
+    @keyframes float-heart {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    
+    .pookie-trigger-area {
+      height: 30px;
+      cursor: pointer;
+    }
+    
+    .hidden-pookie {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    
+    .pookie-trigger-area:hover + .hidden-pookie {
+      opacity: 1;
+    }
+    
+    /* Button glow effect */
+    .glow-button {
+      animation: glow 2s infinite alternate;
+    }
+    
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 5px -5px #ff85a2;
+      }
+      to {
+        box-shadow: 0 0 20px 5px #ff85a2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="cursor"></div>
+  
+  <div class="gradient-bg relative overflow-hidden">
+    <!-- Clouds -->
+    <div class="cloud" style="top: 15%; left: -10%; opacity: 0.5;">
+      <svg width="200" height="60" viewBox="0 0 200 60" fill="white">
+        <path d="M30,30 Q45,15 60,30 T90,30 T120,30 T150,30 Q180,45 170,60 L30,60 Q20,45 30,30 Z"></path>
+      </svg>
+    </div>
+    <div class="cloud" style="top: 40%; left: -20%; animation-delay: 20s; opacity: 0.3;">
+      <svg width="300" height="80" viewBox="0 0 300 80" fill="white">
+        <path d="M45,45 Q67,22 90,45 T135,45 T180,45 T225,45 Q270,67 255,90 L45,90 Q30,67 45,45 Z"></path>
+      </svg>
+    </div>
+    
+    <!-- Fireflies (will be added with JS) -->
+    
+    <div class="container mx-auto px-4 py-16 relative z-10">
+      <div class="text-center mb-10">
+        <h1 class="handwritten text-4xl md:text-5xl font-bold text-pink-800 mb-2 animate-bounce">
+          Almost there, Pookie! Pick a day for our special date 💖
+        </h1>
+        <p class="handwritten text-lg text-purple-700">
+          (No pressure, but I hope you choose soon! 😜)
+        </p>
+      </div>
+      
+      <div class="max-w-lg mx-auto bg-white bg-opacity-40 backdrop-filter backdrop-blur-sm p-6 rounded-2xl shadow-lg mb-8">
+        <h2 class="handwritten text-2xl text-center text-pink-700 mb-4">Choose Your Perfect Day ✨</h2>
+        
+        <!-- Calendar -->
+        <div class="grid grid-cols-7 gap-1 mb-6">
+          <!-- Days of week -->
+          <div class="text-center text-gray-600 font-semibold p-2">Sun</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Mon</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Tue</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Wed</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Thu</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Fri</div>
+          <div class="text-center text-gray-600 font-semibold p-2">Sat</div>
+          
+          <!-- Empty cells for previous month -->
+          <div class="calendar-empty"></div>
+          <div class="calendar-empty"></div>
+          
+          <!-- Calendar days -->
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="1">1</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="2">2</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="3">3</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="4">4</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="5">5</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="6">6</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="7">7</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="8">8</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="9">9</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="10">10</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="11">11</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="12">12</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="13">13</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="14">14</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="15">15</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="16">16</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="17">17</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="18">18</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="19">19</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="20">20</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="21">21</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="22">22</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="23">23</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="24">24</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="25">25</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="26">26</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="27">27</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="28">28</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="29">29</div>
+          <div class="calendar-day text-center p-3 rounded-lg relative" data-date="30">30</div>
+        </div>
+        
+        <div id="date-confirmation" class="text-center handwritten text-lg text-pink-600 my-4 opacity-0">
+          Great choice, Pookie! Now, when do we meet?
+        </div>
+      </div>
+      
+      <!-- 3D Mirror Container for Time Preference Section -->
+      <div id="time-section" class="mirror-container max-w-lg mx-auto opacity-0">
+        <div class="mirror-content">
+          <h2 class="handwritten text-2xl text-center text-pink-700 mb-4">Choose Your Vibe! ✨</h2>
+          
+          <div class="flex flex-col md:flex-row justify-center gap-4 mb-6">
+            <div class="time-option bg-white bg-opacity-70 p-4 rounded-xl shadow text-center transform hover:rotate-1" data-time="afternoon">
+              <div class="text-3xl mb-2">☀️</div>
+              <h3 class="handwritten text-xl font-bold text-pink-700">Afternoon Date</h3>
+              <p class="text-purple-600">"Sunshine & Smiles!"</p>
+            </div>
+            
+            <div class="time-option bg-white bg-opacity-70 p-4 rounded-xl shadow text-center transform hover:rotate-1" data-time="evening">
+              <div class="text-3xl mb-2">🌆</div>
+              <h3 class="handwritten text-xl font-bold text-pink-700">Evening Date</h3>
+              <p class="text-purple-600">"Golden Hour Feels ✨"</p>
+            </div>
+            
+            <div class="time-option bg-white bg-opacity-70 p-4 rounded-xl shadow text-center transform hover:rotate-1" data-time="midnight">
+              <div class="text-3xl mb-2">🌙</div>
+              <h3 class="handwritten text-xl font-bold text-pink-700">Midnight Vibes</h3>
+              <p class="text-purple-600">"Moonlight & Magic! 💫"</p>
+            </div>
+          </div>
+          
+          <!-- Pookie Surprise Trigger Area -->
+          <div class="pookie-trigger-area w-full"></div>
+          
+          <!-- Hidden Pookie Option -->
+          <div class="hidden-pookie text-center mb-4">
+            <div class="heart-float inline-block cursor-pointer" id="pookie-surprise">
+              <span class="text-xl">💞</span>
+              <span class="handwritten text-pink-700">Pookie Time! Click me for something special</span>
+            </div>
+          </div>
+        </div>
+        <div class="mirror-reflection"></div>
+      </div>
+      
+      <!-- Pookie Special Option (Hidden initially) -->
+      <div id="pookie-special" class="mirror-container max-w-lg mx-auto hidden">
+        <div class="mirror-content">
+          <div class="time-option bg-white bg-opacity-70 p-4 rounded-xl shadow text-center w-full selected" data-time="surprise">
+            <div class="text-4xl mb-2">🏡</div>
+            <h3 class="handwritten text-2xl font-bold text-pink-700">Surprise Me!</h3>
+            <p class="text-purple-600">"I'll plan something magical! 🎁"</p>
+          </div>
+          
+          <div class="text-center mt-4">
+            <p class="handwritten text-xl text-pink-600">Aww, you trust me? Get ready for the best date ever! 😘</p>
+          </div>
+        </div>
+        <div class="mirror-reflection"></div>
+      </div>
+      
+      <!-- Final Confirmation -->
+      <div id="final-confirmation" class="mirror-container max-w-lg mx-auto hidden">
+        <div class="mirror-content">
+          <div class="text-3xl mb-2 text-center">💕</div>
+          <h2 class="handwritten text-2xl font-bold text-pink-700 text-center">Yay! Date is locked in!</h2>
+          <p class="text-purple-600 mt-2 text-center">Final step ahead 😘</p>
+          
+          <div class="text-center mt-6">
+            <button id="next-button" class="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-8 py-3 rounded-full shadow-lg handwritten text-xl transition transform hover:scale-105 glow-button">
+              Next
+            </button>
+          </div>
+        </div>
+        <div class="mirror-reflection"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Add fireflies
+    function addFireflies(count) {
+      const container = document.querySelector('.gradient-bg');
+      for (let i = 0; i < count; i++) {
+        const firefly = document.createElement('div');
+        firefly.className = 'firefly';
+        firefly.style.left = `${Math.random() * 100}%`;
+        firefly.style.top = `${Math.random() * 100}%`;
+        firefly.style.animationDuration = `${15 + Math.random() * 10}s`;
+        firefly.style.animationDelay = `${Math.random() * 5}s`;
+        container.appendChild(firefly);
+      }
+    }
+    
+    // Custom cursor
+    function updateCursor(e) {
+      const cursor = document.querySelector('.cursor');
+      cursor.style.left = `${e.clientX}px`;
+      cursor.style.top = `${e.clientY}px`;
+      
+      // Twinkling star effect
+      cursor.style.boxShadow = `0 0 ${5 + Math.random() * 10}px ${2 + Math.random() * 3}px rgba(255, 255, 255, 0.8)`;
+      cursor.style.backgroundColor = `rgba(255, 255, 255, ${0.7 + Math.random() * 0.3})`;
+    }
+    
+    // Handle calendar day selection
+    function handleDaySelection() {
+      const days = document.querySelectorAll('.calendar-day');
+      const dateConfirmation = document.getElementById('date-confirmation');
+      const timeSection = document.getElementById('time-section');
+      
+      days.forEach(day => {
+        day.addEventListener('click', () => {
+          // Remove previous selection
+          document.querySelectorAll('.selected-date').forEach(el => {
+            el.classList.remove('selected-date');
+            const existingHeart = el.querySelector('.heart');
+            if (existingHeart) {
+              existingHeart.remove();
+            }
+          });
+          
+          // Add new selection
+          day.classList.add('selected-date');
+          
+          // Add floating heart
+          const heart = document.createElement('div');
+          heart.className = 'heart absolute -top-4 left-1/2 transform -translate-x-1/2 heart-float';
+          heart.innerHTML = '❤️';
+          day.appendChild(heart);
+          
+          // Show confirmation and time section with 3D effect
+          gsap.to(dateConfirmation, {
+            opacity: 1,
+            duration: 0.5,
+            ease: 'power2.out'
+          });
+          
+          // Add a slight delay before showing the 3D mirror container
+          gsap.to(timeSection, {
+            opacity: 1,
+            duration: 0.8,
+            delay: 0.3,
+            ease: 'power2.out',
+            onComplete: () => {
+              // Add extra 3D animation
+              gsap.from(timeSection.querySelector('.mirror-content'), {
+                rotateY: -15,
+                duration: 1,
+                ease: 'elastic.out(1, 0.7)'
+              });
+            }
+          });
+        });
+      });
+    }
+    
+    // Handle time selection
+    function handleTimeSelection() {
+      const timeOptions = document.querySelectorAll('.time-option');
+      const finalConfirmation = document.getElementById('final-confirmation');
+      
+      timeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          // Remove previous selection
+          document.querySelectorAll('.time-option.selected').forEach(el => {
+            if (el.getAttribute('data-time') !== 'surprise') {
+              el.classList.remove('selected');
+            }
+          });
+          
+          // Add new selection
+          option.classList.add('selected');
+          
+          // Add sparkle effect
+          createSparkles(option);
+          
+          // Show final confirmation with 3D effect
+          gsap.set(finalConfirmation, {
+            display: 'block',
+            opacity: 0
+          });
+          
+          gsap.to(finalConfirmation, {
+            opacity: 1,
+            duration: 0.8,
+            ease: 'power2.out',
+            onComplete: () => {
+              // Add extra 3D animation
+              gsap.from(finalConfirmation.querySelector('.mirror-content'), {
+                rotateY: 15,
+                y: 50,
+                duration: 1,
+                ease: 'elastic.out(1, 0.7)'
+              });
+            }
+          });
+        });
+      });
+    }
+    
+    // Handle Pookie surprise
+    function handlePookieSurprise() {
+      const pookieSurprise = document.getElementById('pookie-surprise');
+      const pookieSpecial = document.getElementById('pookie-special');
+      
+      pookieSurprise.addEventListener('click', () => {
+        // Show pookie special option with 3D effect
+        gsap.set(pookieSpecial, {
+          display: 'block',
+          opacity: 0
+        });
+        
+        gsap.to(pookieSpecial, {
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power2.out',
+          onComplete: () => {
+            // Add 3D animation
+            gsap.from(pookieSpecial.querySelector('.mirror-content'), {
+              rotateX: 30,
+              scale: 0.8,
+              duration: 1,
+              ease: 'elastic.out(1, 0.7)'
+            });
+          }
+        });
+        
+        // Show final confirmation
+        gsap.set(document.getElementById('final-confirmation'), {
+          display: 'block',
+          opacity: 0
+        });
+        
+        gsap.to(document.getElementById('final-confirmation'), {
+          opacity: 1,
+          duration: 0.8,
+          delay: 0.5,
+          ease: 'power2.out'
+        });
+      });
+    }
+    
+    // Create sparkle effect
+    function createSparkles(element) {
+      for (let i = 0; i < 10; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'absolute pointer-events-none';
+        sparkle.innerHTML = '✨';
+        sparkle.style.left = `${Math.random() * 100}%`;
+        sparkle.style.top = `${Math.random() * 100}%`;
+        sparkle.style.opacity = '0';
+        sparkle.style.transform = 'scale(0.5)';
+        element.appendChild(sparkle);
+        
+        gsap.to(sparkle, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.3,
+          onComplete: () => {
+            gsap.to(sparkle, {
+              opacity: 0,
+              y: -20,
+              duration: 0.5,
+              delay: 0.2,
+              onComplete: () => {
+                sparkle.remove();
+              }
+            });
+          }
+        });
+      }
+    }
+    
+    // Handle next button
+    function handleNextButton() {
+      const nextButton = document.getElementById('next-button');
+      
+      nextButton.addEventListener('click', () => {
+        // Add page transition effect
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-pink-100 z-50';
+        overlay.style.opacity = '0';
+        document.body.appendChild(overlay);
+        
+        gsap.to(overlay, {
+          opacity: 1,
+          duration: 0.8,
+          onComplete: () => {
+            // Redirect to the next page
+            window.location.href = 'final.html'; // Replace with your next page URL
+          }
+        });
+      });
+    }
+    
+    // Initialize everything when document is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      addFireflies(30);
+      document.addEventListener('mousemove', updateCursor);
+      handleDaySelection();
+      handleTimeSelection();
+      handlePookieSurprise();
+      handleNextButton();
+      
+      // Initial animations
+      gsap.from('.handwritten', {
+        y: -20,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.1,
+        ease: 'back.out(1.7)'
+      });
+      
+      gsap.from('.calendar-day', {
+        scale: 0.5,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.02,
+        ease: 'back.out(1.7)',
+        onComplete: () => {
+          // Make sure they remain faded after the initial animation
+          document.querySelectorAll('.calendar-day:not(.selected-date)').forEach(day => {
+            day.style.opacity = '0.5';
+          });
+        }
+      });
+      
+      // Create floating effect for mirror containers
+      gsap.to('.mirror-container', {
+        y: '-8px',
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+      
+      // Make the days animation sequence more playful
+      gsap.to('.calendar-day', {
+        y: '-5px',
+        duration: 1.5,
+        stagger: {
+          each: 0.1,
+          grid: [5, 7],
+          from: 'center',
+          repeat: -1,
+          yoyo: true
+        },
+        ease: 'sine.inOut'
+      });
+      
+      // Set cursor color change on interval
+      setInterval(() => {
+        const cursor = document.querySelector('.cursor');
+        if (cursor) {
+          const colors = ['rgba(255,192,203,0.8)', 'rgba(255,255,255,0.8)', 'rgba(230,190,255,0.8)'];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          cursor.style.backgroundColor = randomColor;
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

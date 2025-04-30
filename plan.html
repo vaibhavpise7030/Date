@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Perfect Date</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffccd5, #c9d8f7);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Sparkles */
+        .sparkles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .sparkle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Floating clouds */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            filter: blur(20px);
+            z-index: -1;
+        }
+
+        /* Hearts */
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            color: rgba(255, 105, 180, 0.7);
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .main-heading {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #ff6b9d;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sub-heading {
+            font-size: 1rem;
+            color: #8a8a8a;
+        }
+
+        /* Date cards container */
+        .date-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            max-width: 1200px;
+        }
+
+        /* Date card */
+        .date-card {
+            background: white;
+            width: 250px;
+            height: 300px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            padding: 1.5rem;
+        }
+
+        .date-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .date-card.selected {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.6);
+        }
+
+        .date-card-emoji {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .date-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #ff6b9d;
+        }
+
+        .date-card-desc {
+            font-size: 0.9rem;
+            text-align: center;
+            color: #8a8a8a;
+        }
+
+        /* Cards background */
+        .movie-bg, .cafe-bg, .park-bg, .surprise-bg, .cozy-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .movie-bg {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="10" y="10" width="20" height="20" fill="%23000"/><rect x="40" y="10" width="20" height="20" fill="%23000"/><rect x="70" y="10" width="20" height="20" fill="%23000"/><rect x="10" y="40" width="20" height="20" fill="%23000"/><rect x="40" y="40" width="20" height="20" fill="%23000"/><rect x="70" y="40" width="20" height="20" fill="%23000"/><rect x="10" y="70" width="20" height="20" fill="%23000"/><rect x="40" y="70" width="20" height="20" fill="%23000"/><rect x="70" y="70" width="20" height="20" fill="%23000"/></svg>') repeat;
+        }
+
+        .cafe-bg {
+            background: linear-gradient(45deg, rgba(139, 69, 19, 0.1) 25%, transparent 25%, transparent 75%, rgba(139, 69, 19, 0.1) 75%, rgba(139, 69, 19, 0.1)),
+                        linear-gradient(45deg, rgba(139, 69, 19, 0.1) 25%, transparent 25%, transparent 75%, rgba(139, 69, 19, 0.1) 75%, rgba(139, 69, 19, 0.1));
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .park-bg {
+            background: linear-gradient(90deg, rgba(0, 128, 0, 0.1) 25%, transparent 25%, transparent 75%, rgba(0, 128, 0, 0.1) 75%, rgba(0, 128, 0, 0.1));
+            background-size: 20px;
+        }
+
+        .surprise-bg {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 215, 0, 0.1) 75%, rgba(255, 215, 0, 0.1));
+            background-size: 20px 20px;
+        }
+
+        .cozy-bg {
+            background: linear-gradient(45deg, rgba(255, 105, 180, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 105, 180, 0.1) 75%, rgba(255, 105, 180, 0.1));
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Pookie Mode Button */
+        .pookie-mode-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #ff6b9d;
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            z-index: 100;
+        }
+
+        .pookie-mode-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #ff6b9d;
+            margin-bottom: 1rem;
+        }
+
+        .modal-desc {
+            font-size: 1.2rem;
+            color: #8a8a8a;
+            margin-bottom: 2rem;
+        }
+
+        .modal-button {
+            padding: 12px 30px;
+            background-color: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .modal-button:hover {
+            background-color: #ff4b85;
+            transform: scale(1.05);
+        }
+
+        /* Cozy card (hidden by default) */
+        .date-card.cozy {
+            display: none;
+        }
+
+        /* Cursor trail */
+        .cursor-trail {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .main-heading {
+                font-size: 2rem;
+            }
+            
+            .date-cards {
+                gap: 1rem;
+            }
+            
+            .date-card {
+                width: 200px;
+                height: 250px;
+            }
+            
+            .date-card-emoji {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-heading {
+                font-size: 1.5rem;
+            }
+            
+            .date-cards {
+                gap: 1rem;
+            }
+            
+            .date-card {
+                width: 150px;
+                height: 200px;
+                padding: 1rem;
+            }
+            
+            .date-card-emoji {
+                font-size: 3rem;
+            }
+            
+            .date-card-title {
+                font-size: 1.2rem;
+            }
+            
+            .date-card-desc {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sparkles container -->
+    <div class="sparkles" id="sparkles"></div>
+    
+    <!-- Header -->
+    <div class="header">
+        <h1 class="main-heading">✨ Help me decide, Pookie! Where should we go? ✨</h1>
+        <p class="sub-heading">(Don't worry, you're the boss here 😘)</p>
+    </div>
+    
+    <!-- Date cards -->
+    <div class="date-cards">
+        <!-- Movie Night -->
+        <div class="date-card" data-option="movie">
+            <div class="movie-bg"></div>
+            <div class="date-card-emoji">🍿</div>
+            <h3 class="date-card-title">Movie Night</h3>
+            <p class="date-card-desc">Comfy seats, buttery popcorn, and snuggling during the scary parts!</p>
+        </div>
+        
+        <!-- Café Hangout -->
+        <div class="date-card" data-option="cafe">
+            <div class="cafe-bg"></div>
+            <div class="date-card-emoji">☕</div>
+            <h3 class="date-card-title">Café Hangout</h3>
+            <p class="date-card-desc">Deep conversations over steaming coffee and sweet treats!</p>
+        </div>
+        
+        <!-- Amusement Park -->
+        <div class="date-card" data-option="park">
+            <div class="park-bg"></div>
+            <div class="date-card-emoji">🎡</div>
+            <h3 class="date-card-title">Amusement Park</h3>
+            <p class="date-card-desc">Thrilling rides, cotton candy, and winning you a giant teddy bear!</p>
+        </div>
+        
+        <!-- Surprise -->
+        <div class="date-card" data-option="surprise">
+            <div class="surprise-bg"></div>
+            <div class="date-card-emoji">🎁</div>
+            <h3 class="date-card-title">Surprise Me!</h3>
+            <p class="date-card-desc">I'll plan something special, just for you! No peeking until date day!</p>
+        </div>
+        
+        <!-- Cozy Date (Hidden until Pookie Mode) -->
+        <div class="date-card cozy" data-option="cozy">
+            <div class="cozy-bg"></div>
+            <div class="date-card-emoji">🏠</div>
+            <h3 class="date-card-title">Cozy Date Night at My Place!</h3>
+            <p class="date-card-desc">Cuddles + Movies + Snacks = Best Date Ever! 💖</p>
+        </div>
+    </div>
+    
+    <!-- Pookie Mode Button -->
+    <button class="pookie-mode-button" id="pookieButton">Pookie Mode ❤️</button>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <div class="modal-emoji">😍</div>
+            <h2 class="modal-title">Awesome choice, Pookie!</h2>
+            <p class="modal-desc">Let's set the details on the next page. 😘</p>
+            <button class="modal-button" id="nextButton">Next</button>
+        </div>
+    </div>
+    
+    <!-- Pookie Mode Modal -->
+    <div class="modal" id="pookieModal">
+        <div class="modal-content">
+            <div class="modal-emoji">💞</div>
+            <h2 class="modal-title">Aww, Pookie!</h2>
+            <p class="modal-desc">You unlocked the Secret Date Plan just for us! 💞</p>
+            <button class="modal-button" id="pookieConfirmButton">Show Me</button>
+        </div>
+    </div>
+    
+    <!-- Cozy Date Selected Modal -->
+    <div class="modal" id="cozySelectedModal">
+        <div class="modal-content">
+            <div class="modal-emoji">😉</div>
+            <h2 class="modal-title">Hehe, I knew you'd love this one!</h2>
+            <p class="modal-desc">Now, let's finalize the details!</p>
+            <button class="modal-button" id="cozyNextButton">Next</button>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const sparklesContainer = document.getElementById('sparkles');
+        const dateCards = document.querySelectorAll('.date-card');
+        const pookieButton = document.getElementById('pookieButton');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const pookieModal = document.getElementById('pookieModal');
+        const cozySelectedModal = document.getElementById('cozySelectedModal');
+        const nextButton = document.getElementById('nextButton');
+        const pookieConfirmButton = document.getElementById('pookieConfirmButton');
+        const cozyNextButton = document.getElementById('cozyNextButton');
+        const cozyCard = document.querySelector('.date-card.cozy');
+        
+        // Audio elements
+        const selectSound = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwMD09PT09PT09PT09PT1LSUlJSUlXV1dXV1dkZGRkZGRwcHBwcHB+fn5+fn6Lj4+Pj4+Pj4+Pj4+Pnp6enp6eqqqqqqqqvb29vb29z8/Pz8/P3d3d3d3d6urq6urq9PT09PT0//8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYtAAAAAAAAHjOZTf9/AAAAAAAAAAAAAAAAAAAAAP/7kARpQAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7kARpAAAADSAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==');
+        
+        // Create floating clouds
+        for (let i = 0; i < 8; i++) {
+            const cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+            cloud.style.width = `${Math.random() * 150 + 100}px`;
+            cloud.style.height = `${Math.random() * 150 + 100}px`;
+            cloud.style.left = `${Math.random() * 100}%`;
+            cloud.style.top = `${Math.random() * 100}%`;
+            document.body.appendChild(cloud);
+            
+            // Animate clouds
+            gsap.to(cloud, {
+                x: Math.random() * 100 - 50,
+                y: Math.random() * 100 - 50,
+                duration: Math.random() * 20 + 20,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        }
+        
+        // Create sparkles
+        for (let i = 0; i < 50; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('sparkle');
+            sparkle.style.width = `${Math.random() * 4 + 2}px`;
+            sparkle.style.height = sparkle.style.width;
+            sparkle.style.left = `${Math.random() * 100}%`;
+            sparkle.style.top = `${Math.random() * 100}%`;
+            sparklesContainer.appendChild(sparkle);
+            
+            // Animate sparkles
+            gsap.to(sparkle, {
+                opacity: Math.random() * 0.7 + 0.3,
+                scale: Math.random() * 2 + 1,
+                duration: Math.random() * 2 + 1,
+                repeat: -1,
+                yoyo: true,
+                delay: Math.random() * 2
+            });
+        }
+        
+        // Create random floating hearts
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.textContent = '❤️';
+            heart.style.fontSize = `${Math.random() * 15 + 10}px`;
+            heart.style.left = `${Math.random() * 100}%`;
+            heart.style.top = '100%';
+            document.body.appendChild(heart);
+            
+            // Animate heart
+            gsap.to(heart, {
+                y: -window.innerHeight - 100,
+                x: Math.random() * 100 - 50,
+                opacity: 0.7,
+                duration: Math.random() * 10 + 10,
+                onComplete: () => {
+                    heart.remove();
+                }
+            });
+        }, 2000);
+        
+        // Cursor trail effect
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        // Create cursor trail when hovering over date cards
+        dateCards.forEach(card => {
+            card.addEventListener('mousemove', () => {
+                const trail = document.createElement('div');
+                trail.classList.add('cursor-trail');
+                trail.style.left = `${mouseX}px`;
+                trail.style.top = `${mouseY}px`;
+                document.body.appendChild(trail);
+                
+                // Animate trail
+                gsap.to(trail, {
+                    opacity: 0.7,
+                    scale: 2,
+                    x: Math.random() * 20 - 10,
+                    y: Math.random() * 20 - 10,
+                    duration: 1,
+                    onComplete: () => {
+                        trail.remove();
+                    }
+                });
+            });
+            
+            // Add shake animation on hover
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    x: 3,
+                    duration: 0.1,
+                    repeat: 5,
+                    yoyo: true,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+        });
+        
+        // Pookie Mode Button
+        pookieButton.addEventListener('click', () => {
+            pookieModal.classList.add('active');
+        });
+        
+        // Pookie Confirm Button
+        pookieConfirmButton.addEventListener('click', () => {
+            pookieModal.classList.remove('active');
+            cozyCard.style.display = 'flex';
+            
+            // Add entrance animation
+            gsap.from(cozyCard, {
+                scale: 0,
+                opacity: 0,
+                duration: 0.5,
+                ease: "back.out(1.7)"
+            });
+        });
+        
+        // Date selection
+        let selectedCard = null;
+        
+        dateCards.forEach(card => {
+            card.addEventListener('click', () => {
+                selectSound.play();
+                
+                // Remove selected class from previous card
+                if (selectedCard) {
+                    selectedCard.classList.remove('selected');
+                }
+                
+                // Add selected class to current card
+                card.classList.add('selected');
+                selectedCard = card;
+                
+                // Show appropriate modal
+                if (card.dataset.option === 'cozy') {
+                    cozySelectedModal.classList.add('active');
+                } else {
+                    confirmationModal.classList.add('active');
+                }
+            });
+        });
+        
+       
+        nextButton.addEventListener('click', () => {
+            confirmationModal.classList.remove('active');
+            // Smooth page transition effect
+            gsap.to("body", {
+                opacity: 0,
+                duration: 1.5,
+                onComplete: () => {
+                    window.location.href = "date.html"; // Replace with your next page URL
+                }
+            });
+        });
+        // Cozy Next button
+        cozyNextButton.addEventListener('click', () => {
+            cozySelectedModal.classList.remove('active');
+            // Here you would normally redirect to next page
+            // For demo, we'll just close the modal
+            gsap.to("body", {
+                opacity: 0,
+                duration: 1.5,
+                onComplete: () => {
+                    window.location.href = "date.html"; // Replace with your next page URL
+                }
+            });
+        });
+    </script>
+</body>
+</html>
