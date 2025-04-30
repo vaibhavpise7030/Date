@@ -200,7 +200,7 @@
     <div class="container mx-auto px-4 py-16 relative z-10">
       <div class="text-center mb-10">
         <h1 class="handwritten text-4xl md:text-5xl font-bold text-pink-800 mb-2 animate-bounce">
-          Almost there, Pookie! Pick a day for our special date 💖
+          Almost there, Dear! Pick a day for our special date 💖
         </h1>
         <p class="handwritten text-lg text-purple-700">
           (No pressure, but I hope you choose soon! 😜)
@@ -259,7 +259,7 @@
         </div>
         
         <div id="date-confirmation" class="text-center handwritten text-lg text-pink-600 my-4 opacity-0">
-          Great choice, Pookie! Now, when do we meet?
+          Great choice, Dear! Now, when do we meet?
         </div>
       </div>
       
@@ -288,22 +288,22 @@
             </div>
           </div>
           
-          <!-- Pookie Surprise Trigger Area -->
-          <div class="pookie-trigger-area w-full"></div>
+          <!-- Dear Surprise Trigger Area -->
+          <div class="Dear-trigger-area w-full"></div>
           
-          <!-- Hidden Pookie Option -->
-          <div class="hidden-pookie text-center mb-4">
-            <div class="heart-float inline-block cursor-pointer" id="pookie-surprise">
+          <!-- Hidden Dear Option -->
+          <div class="hidden-Dear text-center mb-4">
+            <div class="heart-float inline-block cursor-pointer" id="Dear-surprise">
               <span class="text-xl">💞</span>
-              <span class="handwritten text-pink-700">Pookie Time! Click me for something special</span>
+              <span class="handwritten text-pink-700">Dear Time! Click me for something special</span>
             </div>
           </div>
         </div>
         <div class="mirror-reflection"></div>
       </div>
       
-      <!-- Pookie Special Option (Hidden initially) -->
-      <div id="pookie-special" class="mirror-container max-w-lg mx-auto hidden">
+      <!-- Dear Special Option (Hidden initially) -->
+      <div id="Dear-special" class="mirror-container max-w-lg mx-auto hidden">
         <div class="mirror-content">
           <div class="time-option bg-white bg-opacity-70 p-4 rounded-xl shadow text-center w-full selected" data-time="surprise">
             <div class="text-4xl mb-2">🏡</div>
@@ -458,25 +458,25 @@
       });
     }
     
-    // Handle Pookie surprise
-    function handlePookieSurprise() {
-      const pookieSurprise = document.getElementById('pookie-surprise');
-      const pookieSpecial = document.getElementById('pookie-special');
+    // Handle Dear surprise
+    function handleDearSurprise() {
+      const DearSurprise = document.getElementById('Dear-surprise');
+      const DearSpecial = document.getElementById('Dear-special');
       
-      pookieSurprise.addEventListener('click', () => {
-        // Show pookie special option with 3D effect
-        gsap.set(pookieSpecial, {
+      DearSurprise.addEventListener('click', () => {
+        // Show Dear special option with 3D effect
+        gsap.set(DearSpecial, {
           display: 'block',
           opacity: 0
         });
         
-        gsap.to(pookieSpecial, {
+        gsap.to(DearSpecial, {
           opacity: 1,
           duration: 0.8,
           ease: 'power2.out',
           onComplete: () => {
             // Add 3D animation
-            gsap.from(pookieSpecial.querySelector('.mirror-content'), {
+            gsap.from(DearSpecial.querySelector('.mirror-content'), {
               rotateX: 30,
               scale: 0.8,
               duration: 1,
@@ -559,7 +559,7 @@
       document.addEventListener('mousemove', updateCursor);
       handleDaySelection();
       handleTimeSelection();
-      handlePookieSurprise();
+      handleDearSurprise();
       handleNextButton();
       
       // Initial animations
