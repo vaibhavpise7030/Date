@@ -172,8 +172,8 @@
             background-position: 0 0, 10px 10px;
         }
 
-        /* Pookie Mode Button */
-        .pookie-mode-button {
+        /* Dear Mode Button */
+        .Dear-mode-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -189,7 +189,7 @@
             z-index: 100;
         }
 
-        .pookie-mode-button:hover {
+        .Dear-mode-button:hover {
             transform: scale(1.1);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
@@ -332,7 +332,7 @@
     
     <!-- Header -->
     <div class="header">
-        <h1 class="main-heading">✨ Help me decide, Pookie! Where should we go? ✨</h1>
+        <h1 class="main-heading">✨ Help me decide, Dear! Where should we go? ✨</h1>
         <p class="sub-heading">(Don't worry, you're the boss here 😘)</p>
     </div>
     
@@ -370,7 +370,7 @@
             <p class="date-card-desc">I'll plan something special, just for you! No peeking until date day!</p>
         </div>
         
-        <!-- Cozy Date (Hidden until Pookie Mode) -->
+        <!-- Cozy Date (Hidden until Dear Mode) -->
         <div class="date-card cozy" data-option="cozy">
             <div class="cozy-bg"></div>
             <div class="date-card-emoji">🏠</div>
@@ -379,26 +379,26 @@
         </div>
     </div>
     
-    <!-- Pookie Mode Button -->
-    <button class="pookie-mode-button" id="pookieButton">Pookie Mode ❤️</button>
+    <!-- Dear Mode Button -->
+    <button class="Dear-mode-button" id="DearButton">Dear Mode ❤️</button>
     
     <!-- Confirmation Modal -->
     <div class="modal" id="confirmationModal">
         <div class="modal-content">
             <div class="modal-emoji">😍</div>
-            <h2 class="modal-title">Awesome choice, Pookie!</h2>
+            <h2 class="modal-title">Awesome choice, Dear!</h2>
             <p class="modal-desc">Let's set the details on the next page. 😘</p>
             <button class="modal-button" id="nextButton">Next</button>
         </div>
     </div>
     
-    <!-- Pookie Mode Modal -->
-    <div class="modal" id="pookieModal">
+    <!-- Dear Mode Modal -->
+    <div class="modal" id="DearModal">
         <div class="modal-content">
             <div class="modal-emoji">💞</div>
-            <h2 class="modal-title">Aww, Pookie!</h2>
+            <h2 class="modal-title">Aww, Dear!</h2>
             <p class="modal-desc">You unlocked the Secret Date Plan just for us! 💞</p>
-            <button class="modal-button" id="pookieConfirmButton">Show Me</button>
+            <button class="modal-button" id="DearConfirmButton">Show Me</button>
         </div>
     </div>
     
@@ -416,12 +416,12 @@
         // DOM Elements
         const sparklesContainer = document.getElementById('sparkles');
         const dateCards = document.querySelectorAll('.date-card');
-        const pookieButton = document.getElementById('pookieButton');
+        const DearButton = document.getElementById('DearButton');
         const confirmationModal = document.getElementById('confirmationModal');
-        const pookieModal = document.getElementById('pookieModal');
+        const DearModal = document.getElementById('DearModal');
         const cozySelectedModal = document.getElementById('cozySelectedModal');
         const nextButton = document.getElementById('nextButton');
-        const pookieConfirmButton = document.getElementById('pookieConfirmButton');
+        const DearConfirmButton = document.getElementById('DearConfirmButton');
         const cozyNextButton = document.getElementById('cozyNextButton');
         const cozyCard = document.querySelector('.date-card.cozy');
         
@@ -535,14 +535,14 @@
             });
         });
         
-        // Pookie Mode Button
-        pookieButton.addEventListener('click', () => {
-            pookieModal.classList.add('active');
+        // Dear Mode Button
+        DearButton.addEventListener('click', () => {
+            DearModal.classList.add('active');
         });
         
-        // Pookie Confirm Button
-        pookieConfirmButton.addEventListener('click', () => {
-            pookieModal.classList.remove('active');
+        // Dear Confirm Button
+        DearConfirmButton.addEventListener('click', () => {
+            DearModal.classList.remove('active');
             cozyCard.style.display = 'flex';
             
             // Add entrance animation
